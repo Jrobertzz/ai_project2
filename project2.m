@@ -1,6 +1,14 @@
 data = csvread('data.csv');
 [train,test] = distributeData(data,0.75);
 [weight,error1] = hardTraining(train,0.03);
+error2 = hardTesting(test,weight);
+
+figure
+plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
+hold on;
+x = 50 : 1 : 85 ;
+y = -1*(weight(1,3)+weight(1,1)*x)/weight(1,2);
+plot(x,y)
 
 function [training,testing] = distributeData(data1,proportion)
 %This function returns two randomly distributed data sets as training and 
@@ -23,7 +31,7 @@ function [weights,error] = hardTraining(trainingData,learningConst)
     error = 1; %default value
     weights = sum(rand(3)); %randomized starting weights
     while (i <= ite) && (error > epsilon)
-        desiredTotal = zeros(np,1);
+        desired = zeros(np,1);
         for j = 1:np
             output = trainingData(j,1)*weights(1,1)+trainingData(j,2)*weights(1,2)+weights(1,3);
             if output > 0
@@ -32,11 +40,11 @@ function [weights,error] = hardTraining(trainingData,learningConst)
                 output = -1;
             end
             if trainingData(j,3) == 1
-                desiredTotal(j,1) = 1;
+                desired(j,1) = 1;
             else
-                desiredTotal(j,1) = -1;
+                desired(j,1) = -1;
             end
-            delta = alpha*(desiredTotal(j,1)-output);
+            delta = alpha*(desired(j,1)-output);
             deltaW = trainingData(j,:);
             deltaW(1,3) = 1;
             deltaW = deltaW*delta;
@@ -50,7 +58,29 @@ function [weights,error] = hardTraining(trainingData,learningConst)
                outputTotal(j,1) = -1;
            end
         end
-        error = sum((desiredTotal(:,1)-outputTotal(:,1)).^2);
+        error = sum((desired(:,1)-outputTotal(:,1)).^2);
         i = i+1;
     end
+end
+
+function error = hardTesting(testingData,perceptron)
+    np = size(testingData,1);
+    weights = perceptron;
+    desired = zeros(np,1);
+    for i = 1:np
+        if testingData(i,3) == 1
+            desired(i,1) = 1;
+        else
+            desired(i,1) = -1;
+        end
+    end
+    outputTotal = testingData(:,1)*weights(1,1)+testingData(:,2)*weights(1,2)+weights(1,3);
+    for i = 1:np
+       if outputTotal(i,1) > 0
+           outputTotal(i,1) = 1;
+       else
+           outputTotal(i,1) = -1;
+       end
+    end
+    error = sum((desired(:,1)-outputTotal(:,1)).^2);
 end
