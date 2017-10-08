@@ -17,10 +17,6 @@ title(title1)
 xlabel('Height (in)')
 ylabel('Weight (lbs)')
 
-[train,test] = distributeData(data,0.50);
-[weight,error1] = hardTraining(train,Alpha);
-error2 = testing(test,weight);
-
 figure
 plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
 hold on;
@@ -92,6 +88,28 @@ title(title1)
 xlabel('Height (in)')
 ylabel('Weight (lbs)')
 
+%uncomment to see delta training
+%{
+[train,test] = distributeData(data,0.75);
+[weight,error1] = deltaTraining(train,Alpha);
+error2 = testing(test,weight);
+
+figure
+plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
+hold on;
+x = 50 : 1 : 85 ;
+y = -1*(weight(1,3)+weight(1,1)*x)/weight(1,2);
+plot(x,y)
+title1 = strcat('Soft Perceptron with 75% delta training: Error=',num2str(error2(1,1)));
+title(title1)
+xlabel('Height (in)')
+ylabel('Weight (lbs)')
+
+[train,test] = distributeData(data,0.50);
+[weight,error1] = hardTraining(train,Alpha);
+error2 = testing(test,weight);
+%}
+
 function [training,testing_neuron] = distributeData(data1,proportion)
 %This function returns two randomly distributed data sets as training and 
 %testing based on proportion (that should be training).
@@ -104,7 +122,8 @@ end
 
 function [weights,error] = hardTraining(trainingData,learningConst)
 %This function trains a perceptron on the training data (<=1000 
-%iterations) and returns the weights of the resulting perceptron
+%iterations)using a hard activation function
+%and returns the weights of the resulting perceptron
     np = size(trainingData,1);
     ite = 1000;
     alpha = learningConst;
@@ -147,7 +166,8 @@ end
 
 function [weights,error] = softTraining(trainingData,learningConst)
 %This function trains a perceptron on the training data (<=1000 
-%iterations) and returns the weights of the resulting perceptron
+%iterations)using a soft activation function
+%and returns the weights of the resulting perceptron
     np = size(trainingData,1);
     ite = 1000;
     alpha = learningConst;
@@ -161,8 +181,8 @@ function [weights,error] = softTraining(trainingData,learningConst)
             
             X = trainingData(j,1)*weights(1,1)+trainingData(j,2)*weights(1,2)+weights(1,3);
             
-            output = tanh(X);
-            
+            %stretching out tanh
+            output = tanh(X/50);
             if trainingData(j,3) == 1
                 desired(j,1) = 1;
             else
@@ -207,4 +227,52 @@ function error = testing(testingData,perceptron)
        end
     end
     error = sum((desired(:,1)-outputTotal(:,1)).^2);
+end
+
+
+
+
+
+
+
+
+
+function [weights,error] = deltaTraining(trainingData,learningConst)
+%This function trains a neuron using the delta rule
+    np = size(trainingData,1);
+    ite = 1000;
+    alpha = learningConst;
+    epsilon = 0.00001;
+    i = 1;
+    error = 1; %default value
+    weights = sum(rand(3)); %randomized starting weights
+    while (i <= ite) && (error > epsilon)
+        desired = zeros(np,1);
+        for j = 1:np
+            
+            X = trainingData(j,1)*weights(1,1)+trainingData(j,2)*weights(1,2)+weights(1,3);
+            
+            %stretched tenh function
+            output = tanh(X/50);
+            
+            if trainingData(j,3) == 1
+                desired(j,1) = 1;
+            else
+                desired(j,1) = -1;
+            end
+            %wi = wi + ?(yi ? oi)x
+            weights = weights + alpha * (desired(j,1) - output);
+            
+        end
+        outputTotal = trainingData(:,1)*weights(1,1)+trainingData(:,2)*weights(1,2)+weights(1,3);
+        for j = 1:size(outputTotal,1)
+           if outputTotal(j,1) > 0
+               outputTotal(j,1) = 1;
+           else
+               outputTotal(j,1) = -1;
+           end
+        end
+        error = sum((desired(:,1)-outputTotal(:,1)).^2);
+        i = i+1;
+    end
 end
