@@ -1,10 +1,10 @@
 data = csvread('data.csv');
 
-Alpha = .002;
+Alpha = .03;
 
 [train,test] = distributeData(data,0.75);
 [weight,error1] = hardTraining(train,Alpha);
-error2 = hardTesting(test,weight);
+error2 = testing(test,weight);
 
 figure
 plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
@@ -19,7 +19,7 @@ ylabel('Weight (lbs)')
 
 [train,test] = distributeData(data,0.50);
 [weight,error1] = hardTraining(train,Alpha);
-error2 = hardTesting(test,weight);
+error2 = testing(test,weight);
 
 figure
 plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
@@ -34,7 +34,7 @@ ylabel('Weight (lbs)')
 
 [train,test] = distributeData(data,0.25);
 [weight,error1] = hardTraining(train,Alpha);
-error2 = hardTesting(test,weight);
+error2 = testing(test,weight);
 
 figure
 plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
@@ -49,7 +49,7 @@ ylabel('Weight (lbs)')
 
 [train,test] = distributeData(data,0.75);
 [weight,error1] = softTraining(train,Alpha);
-error2 = softTesting(test,weight);
+error2 = testing(test,weight);
 
 figure
 plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
@@ -64,7 +64,7 @@ ylabel('Weight (lbs)')
 
 [train,test] = distributeData(data,0.50);
 [weight,error1] = softTraining(train,Alpha);
-error2 = softTesting(test,weight);
+error2 = testing(test,weight);
 
 figure
 plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
@@ -79,7 +79,7 @@ ylabel('Weight (lbs)')
 
 [train,test] = distributeData(data,0.25);
 [weight,error1] = softTraining(train,Alpha);
-error2 = softTesting(test,weight);
+error2 = testing(test,weight);
 
 figure
 plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
@@ -92,14 +92,14 @@ title(title1)
 xlabel('Height (in)')
 ylabel('Weight (lbs)')
 
-function [training,testing] = distributeData(data1,proportion)
+function [training,testing_neuron] = distributeData(data1,proportion)
 %This function returns two randomly distributed data sets as training and 
 %testing based on proportion (that should be training).
     n = size(data1,1);
     split = round(n*proportion);
     seq = randperm(n);
     training = data1(seq(1:split),1:end);
-    testing = data1(seq(split+1:end),1:end);
+    testing_neuron = data1(seq(split+1:end),1:end);
 end
 
 function [weights,error] = hardTraining(trainingData,learningConst)
@@ -145,28 +145,6 @@ function [weights,error] = hardTraining(trainingData,learningConst)
     end
 end
 
-function error = hardTesting(testingData,perceptron)
-    np = size(testingData,1);
-    weights = perceptron;
-    desired = zeros(np,1);
-    for i = 1:np
-        if testingData(i,3) == 1
-            desired(i,1) = 1;
-        else
-            desired(i,1) = -1;
-        end
-    end
-    outputTotal = testingData(:,1)*weights(1,1)+testingData(:,2)*weights(1,2)+weights(1,3);
-    for i = 1:np
-       if outputTotal(i,1) > 0
-           outputTotal(i,1) = 1;
-       else
-           outputTotal(i,1) = -1;
-       end
-    end
-    error = sum((desired(:,1)-outputTotal(:,1)).^2);
-end
-
 function [weights,error] = softTraining(trainingData,learningConst)
 %This function trains a perceptron on the training data (<=1000 
 %iterations) and returns the weights of the resulting perceptron
@@ -209,7 +187,7 @@ function [weights,error] = softTraining(trainingData,learningConst)
     end
 end
 
-function error = softTesting(testingData,perceptron)
+function error = testing(testingData,perceptron)
     np = size(testingData,1);
     weights = perceptron;
     desired = zeros(np,1);
