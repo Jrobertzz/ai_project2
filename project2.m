@@ -9,6 +9,40 @@ hold on;
 x = 50 : 1 : 85 ;
 y = -1*(weight(1,3)+weight(1,1)*x)/weight(1,2);
 plot(x,y)
+title1 = strcat('Hard Perceptron with 75% training: Error=',num2str(error2(1,1)));
+title(title1)
+xlabel('Height (in)')
+ylabel('Weight (lbs)')
+
+[train,test] = distributeData(data,0.50);
+[weight,error1] = hardTraining(train,0.03);
+error2 = hardTesting(test,weight);
+
+figure
+plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
+hold on;
+x = 50 : 1 : 85 ;
+y = -1*(weight(1,3)+weight(1,1)*x)/weight(1,2);
+plot(x,y)
+title1 = strcat('Hard Perceptron with 50% training: Error=',num2str(error2(1,1)));
+title(title1)
+xlabel('Height (in)')
+ylabel('Weight (lbs)')
+
+[train,test] = distributeData(data,0.25);
+[weight,error1] = hardTraining(train,0.03);
+error2 = hardTesting(test,weight);
+
+figure
+plot (data(1:2000,1),data(1:2000,2),'+b',data(2001:4000,1),data(2001:4000,2),'+r')
+hold on;
+x = 50 : 1 : 85 ;
+y = -1*(weight(1,3)+weight(1,1)*x)/weight(1,2);
+plot(x,y)
+title1 = strcat('Hard Perceptron with 25% training: Error=',num2str(error2(1,1)));
+title(title1)
+xlabel('Height (in)')
+ylabel('Weight (lbs)')
 
 function [training,testing] = distributeData(data1,proportion)
 %This function returns two randomly distributed data sets as training and 
